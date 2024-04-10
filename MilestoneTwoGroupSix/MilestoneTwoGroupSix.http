@@ -1,6 +1,3 @@
 @MilestoneTwoGroupSix_HostAddress = http://localhost:5155
 
-GET {{MilestoneTwoGroupSix_HostAddress}}/weatherforecast/
-Accept: application/json
 
-###
