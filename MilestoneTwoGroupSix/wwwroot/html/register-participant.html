@@ -1,10 +1,28 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Participant</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <header>
+        <h2>Register for Event</h2>
+    </header>
+    <main>
+        <form id="registerParticipantForm">
+            <label for="participantName">Name:</label>
+            <input type="text" id="participantName" name="participantName" required>
 
+            <label for="participantEmail">Email:</label>
+            <input type="email" id="participantEmail" name="participantEmail" required>
+
+            <input type="hidden" id="eventId" name="eventId">
+            <button type="submit">Register</button>
+            <button type="button" onclick="window.history.back();">Cancel</button>
+        </form>
+    </main>
+    <script src="/js/participant-management.js"></script>
 </body>
 </html>

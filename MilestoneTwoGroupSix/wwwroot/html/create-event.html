@@ -1,10 +1,33 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Include your CSS file here -->
 </head>
 <body>
+    <header>
+        <h2>Create a New Event</h2>
+    </header>
+    <main>
+        <form id="createEventForm">
+            <label for="eventName">Name:</label>
+            <input type="text" id="eventName" name="eventName" required>
 
+            <label for="eventDescription">Description:</label>
+            <textarea id="eventDescription" name="eventDescription" required></textarea>
+
+            <label for="eventDateTime">Date and Time:</label>
+            <input type="datetime-local" id="eventDateTime" name="eventDateTime" required>
+
+            <label for="eventLocation">Location:</label>
+            <input type="text" id="eventLocation" name="eventLocation" required>
+
+            <button type="submit">Create</button>
+            <button type="button" onclick="window.history.back();">Cancel</button>
+        </form>
+    </main>
+    <script src="/js/event-management.js"></script>
 </body>
 </html>

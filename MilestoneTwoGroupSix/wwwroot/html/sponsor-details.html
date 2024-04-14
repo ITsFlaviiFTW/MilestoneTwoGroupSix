@@ -1,10 +1,31 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Details</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <header>
+        <h2>Sponsor Event</h2>
+    </header>
+    <main>
+        <form id="sponsorDetailsForm">
+            <label for="sponsorName">Name:</label>
+            <input type="text" id="sponsorName" name="sponsorName" required>
 
+            <label for="sponsorAmount">Amount:</label>
+            <input type="number" id="sponsorAmount" name="sponsorAmount" required>
+
+            <label for="sponsorDetails">Details:</label>
+            <textarea id="sponsorDetails" name="sponsorDetails"></textarea>
+
+            <input type="hidden" id="eventId" name="eventId">
+            <button type="submit">Submit</button>
+            <button type="button" onclick="window.history.back();">Cancel</button>
+        </form>
+    </main>
+    <script src="/js/sponsor-management.js"></script>
 </body>
 </html>

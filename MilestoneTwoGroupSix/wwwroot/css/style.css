@@ -1,0 +1,68 @@
+﻿/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 1em 0;
+    text-align: center;
+}
+
+main {
+    margin: 1em;
+}
+
+form {
+    margin: 1em 0;
+}
+
+    form label {
+        display: block;
+        margin-top: 0.5em;
+    }
+
+    form input[type=text],
+    form input[type=email],
+    form input[type=number],
+    form textarea {
+        width: 100%;
+        padding: 0.5em;
+        margin-top: 0.5em;
+    }
+
+    form button {
+        padding: 0.5em 1em;
+        margin-top: 1em;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+.role-buttons button {
+    padding: 0.5em 1em;
+    margin-right: 0.5em;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+    .role-buttons button:hover {
+        background-color: #1e7e34;
+    }
+

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MilestoneTwoGroupSix.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register the DbContext with dependency injection.
-builder.Services.AddDbContext<DbContext>(options =>
+builder.Services.AddDbContext<EventPlannerDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });

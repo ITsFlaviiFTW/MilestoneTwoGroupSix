@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MilestoneTwoGroupSix.Models;
+using System.Globalization;
 
 namespace MilestoneTwoGroupSix.Data
 {
@@ -13,6 +14,10 @@ namespace MilestoneTwoGroupSix.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Sponsor>()
+                .Property(s => s.Amount)
+                .HasColumnType("decimal(18, 2)");
+
             modelBuilder.Entity<Event>()
                 .HasMany(e => e.Participants)
                 .WithOne(p => p.Event)
@@ -31,6 +36,7 @@ namespace MilestoneTwoGroupSix.Data
             modelBuilder.Entity<Participant>()
                 .HasIndex(p => p.Email)
                 .IsUnique();
+
 
         }
     }
