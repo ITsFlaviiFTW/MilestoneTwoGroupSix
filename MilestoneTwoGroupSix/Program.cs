@@ -31,7 +31,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Use default files (needed for index.html)
+app.UseDefaultFiles();
 
+// Use static files
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll"); // Use the CORS policy
 app.UseAuthorization();

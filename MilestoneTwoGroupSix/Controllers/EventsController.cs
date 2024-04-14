@@ -30,7 +30,6 @@ namespace MilestoneTwoGroupSix.Controllers
                     Description = e.Description,
                     DateTime = e.DateTime,
                     Location = e.Location,
-                    Code = e.Code
                 })
                 .ToListAsync();
 
@@ -50,7 +49,6 @@ namespace MilestoneTwoGroupSix.Controllers
                     Description = e.Description,
                     DateTime = e.DateTime,
                     Location = e.Location,
-                    Code = e.Code
                 })
                 .FirstOrDefaultAsync();
 
@@ -78,49 +76,26 @@ namespace MilestoneTwoGroupSix.Controllers
                 Description = eventDto.Description,
                 DateTime = eventDto.DateTime,
                 Location = eventDto.Location,
-                // Code should be generated in some way, either here or in the model configuration
-                Code = GenerateEventCode() // Implement this method according to your logic
+                Code = GenerateEventCode() // Server-generated code
             };
 
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEventByCode", new { code = @event.Code }, @event);
+            // Create a new DTO to return, now including the Code.
+            var createdEventDto = new EventResponseDTO
+            {
+                Name = @event.Name,
+                Description = @event.Description,
+                DateTime = @event.DateTime,
+                Location = @event.Location,
+                Code = @event.Code // Include the code in the response
+            };
+
+            // Use the generated code for the CreatedAtAction method
+            return CreatedAtAction("GetEventByCode", new { code = @event.Code }, createdEventDto);
         }
 
-        // PUT: api/events/{code}
-        // Update an event by code
-        [HttpPut("{code}")]
-        public async Task<IActionResult> PutEvent(string code, EventDTO eventDto)
-        {
-            var @event = await _context.Events.FirstOrDefaultAsync(e => e.Code == code);
-            if (@event == null)
-            {
-                return NotFound();
-            }
-
-            @event.Name = eventDto.Name;
-            @event.Description = eventDto.Description;
-            @event.DateTime = eventDto.DateTime;
-            @event.Location = eventDto.Location;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Events.Any(e => e.Code == code))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
 
         // DELETE: api/events/{code}
         // Delete an event by code
