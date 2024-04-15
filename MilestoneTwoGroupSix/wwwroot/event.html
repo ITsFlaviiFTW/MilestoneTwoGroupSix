@@ -12,8 +12,18 @@
     </header>
     <main>
         <div id="eventDetails">
-            <!-- Event details will be populated by JavaScript -->
+            <!-- Placeholder elements for event details -->
+            <p id="eventCodeDisplay">Event Code: <span id="code"></span></p>
+            <p id="eventNameDisplay">Name: <span id="name"></span></p>
+            <p id="eventDescriptionDisplay">Description: <span id="description"></span></p>
+            <p id="eventDateTimeDisplay">Date and Time: <span id="dateTime"></span></p>
+            <p id="eventLocationDisplay">Location: <span id="location"></span></p>
         </div>
+        <!-- Participants List -->
+        <section id="participantsSection">
+            <h3>Participants:</h3>
+            <ul id="participantsList"></ul>
+        </section>
         <div class="role-buttons">
             <button id="organizerBtn">Organizer</button>
             <button id="participantBtn">Participant</button>

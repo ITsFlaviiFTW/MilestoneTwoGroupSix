@@ -4,22 +4,45 @@ const apiBaseUrl = 'https://localhost:7193/api';
 // Event listeners for navigating to Create and Find event pages
 document.addEventListener('DOMContentLoaded', () => {
     const createEventButton = document.getElementById('createEventBtn');
-    const findEventButton = document.getElementById('findEventBtn');
-
     if (createEventButton) {
         createEventButton.addEventListener('click', () => {
             window.location.href = 'create-event.html';
         });
     }
 
-    if (findEventButton) {
-        findEventButton.addEventListener('click', () => {
-            // Here you can navigate to a page that lists events or to a search page
-            // For now, it navigates to an assumed 'events-list.html'
-            window.location.href = 'event.html';
+    const findEventForm = document.getElementById('findEventForm');
+    if (findEventForm) {
+        findEventForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const eventCode = document.getElementById('eventCode').value;
+            if (eventCode) {
+                // Check if the event code exists before navigating
+                checkEventCode(eventCode);
+            } else {
+                alert('Please enter an event code.');
+            }
         });
     }
 });
+
+// Function to check if an event code is valid
+function checkEventCode(eventCode) {
+    fetch(`${apiBaseUrl}/events/${eventCode}`)
+        .then(response => {
+            if (response.ok) {
+                // If the response is OK, navigate to the event details page
+                window.location.href = `/event.html?code=${eventCode}`;
+            } else {
+                // If the event is not found, alert the user
+                alert('Event not found. Please check the code and try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking event code:', error);
+            alert('Error checking event code: ' + error.message);
+        });
+}
+
 
 // Fetch and display events
 function fetchEvents() {

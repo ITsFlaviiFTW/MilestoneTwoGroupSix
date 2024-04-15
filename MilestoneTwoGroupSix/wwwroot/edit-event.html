@@ -1,10 +1,40 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <title>Edit Event</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <header>
+        <h2>Edit Event Details</h2>
+    </header>
+    <main>
+        <form id="editEventForm">
+            <label for="editEventName">Name:</label>
+            <input type="text" id="editEventName" required>
 
+            <label for="editEventDescription">Description:</label>
+            <textarea id="editEventDescription" required></textarea>
+
+            <label for="editEventDateTime">Date and Time:</label>
+            <input type="datetime-local" id="editEventDateTime" required>
+
+            <label for="editEventLocation">Location:</label>
+            <input type="text" id="editEventLocation" required>
+
+            <button type="button" id="saveEventBtn">Save</button>
+            <button type="button" id="cancelEventBtn" onclick="window.history.back();">Cancel</button>
+        </form>
+        <div id="participantsSection">
+            <h3>Participants:</h3>
+            <ul id="participantsList"></ul>
+        </div>
+        <div id="sponsorsSection">
+            <h3>Sponsors:</h3>
+            <ul id="sponsorsList"></ul>
+        </div>
+    </main>
+    <script src="/js/event-management.js"></script>
 </body>
 </html>
