@@ -73,32 +73,35 @@ function deleteEvent(eventId) {
 
 
 // Event Details Page
-// Function to display event details on the Event Details Page
+// Function to display event details and resolve with the event ID
 function displayEventDetails(eventCode) {
-    fetch(`${apiBaseUrl}/events/${eventCode}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Event not found for code: ${eventCode}`);
-            }
-            return response.json();
-        })
-        .then(event => {
-            // Assuming the event object contains an id field that is the eventId
-            currentEventId = event.id;
+    return new Promise((resolve, reject) => {
+        fetch(`${apiBaseUrl}/events/${eventCode}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Event not found for code: ${eventCode}`);
+                }
+                return response.json();
+            })
+            .then(event => {
+                 currentEventId = event.id; // Set the currentEventId here
+                 console.log(`currentEventId set to ${currentEventId}`);
 
-            // Now populate the event details in the page
-            // Assuming you have elements with the IDs 'code', 'name', 'description', 'dateTime', 'location'
-            document.getElementById('code').textContent = eventCode;
-            document.getElementById('name').textContent = event.name;
-            document.getElementById('description').textContent = event.description;
-            document.getElementById('dateTime').textContent = new Date(event.dateTime).toLocaleString();
-            document.getElementById('location').textContent = event.location;
-        })
-        .catch(error => {
-            console.error('Error fetching event details:', error);
-            alert('Error fetching event details: ' + error.message);
-        });
+                document.getElementById('code').textContent = eventCode;
+                document.getElementById('name').textContent = event.name;
+                document.getElementById('description').textContent = event.description;
+                document.getElementById('dateTime').textContent = new Date(event.dateTime).toLocaleString();
+                document.getElementById('location').textContent = event.location;
+
+                resolve(currentEventId); // Resolve the promise with the currentEventId
+            })
+            .catch(error => {
+                console.error('Error fetching event details:', error);
+                reject(error);
+            });
+    });
 }
+
 
 // Function to get the eventId from the eventCode
 function getEventIdFromEventCode(eventCode) {
@@ -114,6 +117,7 @@ function getEventIdFromEventCode(eventCode) {
             return data.eventId;
         });
 }
+
 
 
 
@@ -170,15 +174,6 @@ function showParticipants(eventCode) {
 
 
 
-// Call the displayEventDetails function when the event details page is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    const eventCode = getEventCodeFromURL();
-    if (eventCode) {
-        displayEventDetails(eventCode);
-    }
-});
-
-
 // Function to setup role buttons with the correct links
 function setupRoleButtons(eventCode) {
     document.getElementById('organizerBtn').addEventListener('click', function () {
@@ -209,6 +204,7 @@ function hideParticipantForm() {
     document.getElementById('registerParticipantModal').classList.add('hidden');
 }
 
+
 // Event listener for the register participant form submission
 document.getElementById('registerParticipantForm').addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent the form from submitting the traditional way
@@ -217,40 +213,23 @@ document.getElementById('registerParticipantForm').addEventListener('submit', fu
     const participantEmail = document.getElementById('participantEmail').value;
     const eventCode = getEventCodeFromURL();
 
-    // Here you can call getEventIdFromEventCode() function
-    // and then registerParticipant function as previously described
-    // After registration, you can call hideParticipantForm() and showParticipants(eventCode)
+    // Call displayEventDetails to ensure currentEventId is set
+    displayEventDetails(eventCode)
+        .then(eventId => {
+            // Now currentEventId is guaranteed to be set
+            const participantData = {
+                name: participantName,
+                email: participantEmail,
+                EventId: currentEventId // Use the currentEventId that was set
+            };
 
-    // Example:
-     getEventIdFromEventCode(eventCode).then(eventId => {
-         const participantData = {
-             name: participantName,
-             email: participantEmail,
-
-             eventId: eventId,
-             eventCode: eventCode
-         };
-         registerParticipant(participantData);
-         hideParticipantForm();
-         showParticipants(eventCode);
-     });
-    
-        // Ensure all fields are filled out
-        if (!participantName || !participantEmail) {
-            alert('All fields are required.');
-            return;
-        }
-    
-        const participantData = {
-            name: participantName,
-            email: participantEmail,
-            eventCode: eventCode
-        };
-    
-        // Call the function to register the participant
-        registerParticipant(participantData);
-        hideParticipantForm();
-        showParticipants(eventCode);
+            // Register the participant
+            registerParticipant(participantData);
+        })
+        .catch(error => {
+            console.error('Error registering participant:', error);
+            alert('Error: ' + error.message);
+        });
 });
 
 

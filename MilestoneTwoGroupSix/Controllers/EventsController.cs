@@ -137,6 +137,54 @@ namespace MilestoneTwoGroupSix.Controllers
             return Ok(new { eventId = @event.EventId });
         }
 
+        // PUT: api/events/{code}
+        // Update an existing event by code
+        [HttpPut("{code}")]
+        public async Task<ActionResult<EventDTO>> PutEvent(string code, EventDTO eventDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var @event = await _context.Events.FirstOrDefaultAsync(e => e.Code == code);
+            if (@event == null)
+            {
+                return NotFound();
+            }
+
+            // Update the properties of the existing event with the values from the DTO
+            @event.Name = eventDto.Name;
+            @event.Description = eventDto.Description;
+            @event.DateTime = eventDto.DateTime;
+            @event.Location = eventDto.Location;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Events.Any(e => e.Code == code))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            
+            return Ok(new EventDTO
+            {
+                Name = @event.Name,
+                Description = @event.Description,
+                DateTime = @event.DateTime,
+                Location = @event.Location,
+                
+            });
+        }
 
     }
 }
