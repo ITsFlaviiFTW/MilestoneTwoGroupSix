@@ -66,3 +66,7 @@ form {
         background-color: #1e7e34;
     }
 
+
+.hidden {
+    display: none;
+}

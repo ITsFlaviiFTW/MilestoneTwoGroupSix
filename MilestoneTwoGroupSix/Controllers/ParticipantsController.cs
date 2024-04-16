@@ -121,6 +121,30 @@ namespace MilestoneTwoGroupSix.Controllers
             return NoContent();
         }
 
+
+        // GET: api/participants/events/{eventId}
+        [HttpGet("events/{eventId}")]
+        public async Task<ActionResult<IEnumerable<ParticipantDTO>>> GetParticipantsByEventId(int eventId)
+        {
+            var participants = await _context.Participants
+                                            .Where(p => p.EventId == eventId)
+                                            .Select(p => new ParticipantDTO
+                                            {
+                                                Name = p.Name,
+                                                Email = p.Email,
+                                                EventId = p.EventId
+                                            })
+                                            .ToListAsync();
+
+            if (participants == null || !participants.Any())
+            {
+                return NotFound("No participants found for this event.");
+            }
+
+            return Ok(participants);
+        }
+
+
     }
 
 }

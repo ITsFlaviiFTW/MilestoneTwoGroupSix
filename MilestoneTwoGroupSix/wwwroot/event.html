@@ -29,6 +29,21 @@
             <button id="participantBtn">Participant</button>
             <button id="sponsorBtn">Sponsor</button>
         </div>
+
+        <!-- Hidden form for registering participants -->
+        <div id="registerParticipantModal" class="hidden">
+            <form id="registerParticipantForm">
+                <label for="participantName">Name:</label>
+                <input type="text" id="participantName" required>
+
+                <label for="participantEmail">Email:</label>
+                <input type="email" id="participantEmail" required>
+
+                <button type="submit">Register</button>
+                <button type="button" onclick="hideParticipantForm()">Cancel</button>
+            </form>
+        </div>
+
     </main>
     <script src="/js/event-management.js"></script>
 </body>

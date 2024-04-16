@@ -121,5 +121,22 @@ namespace MilestoneTwoGroupSix.Controllers
             return Guid.NewGuid().ToString().Substring(0, 8); // Example logic
         }
 
+        // GET: api/events/code/{code}
+        [HttpGet("code/{code}")]
+        public async Task<ActionResult> GetEventIdByCode(string code)
+        {
+            var @event = await _context.Events
+                                        .Where(e => e.Code == code)
+                                        .SingleOrDefaultAsync();
+
+            if (@event == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new { eventId = @event.EventId });
+        }
+
+
     }
 }

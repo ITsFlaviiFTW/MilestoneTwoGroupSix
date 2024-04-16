@@ -1,12 +1,14 @@
 const apiBaseUrl = 'https://localhost:7193/api';
 
+
+// Global variable to hold the current eventId
+let currentEventId = null;
+
 // Helper function to extract the event code from the URL
 function getEventCodeFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('code');
 }
-
-
 
 // Function to create an event
 function createEvent(eventData) {
@@ -34,8 +36,6 @@ function createEvent(eventData) {
             alert('Error creating event: ' + error.message);
         });
 }
-
-
 
 
 // Function to update an event
@@ -83,13 +83,16 @@ function displayEventDetails(eventCode) {
             return response.json();
         })
         .then(event => {
-            // Populate the event details
+            // Assuming the event object contains an id field that is the eventId
+            currentEventId = event.id;
+
+            // Now populate the event details in the page
+            // Assuming you have elements with the IDs 'code', 'name', 'description', 'dateTime', 'location'
             document.getElementById('code').textContent = eventCode;
             document.getElementById('name').textContent = event.name;
             document.getElementById('description').textContent = event.description;
             document.getElementById('dateTime').textContent = new Date(event.dateTime).toLocaleString();
             document.getElementById('location').textContent = event.location;
-            // You can also invoke functions here to display the list of participants and sponsors
         })
         .catch(error => {
             console.error('Error fetching event details:', error);
@@ -97,33 +100,74 @@ function displayEventDetails(eventCode) {
         });
 }
 
-// Function to display the list of participants for the event
-function showParticipants(eventCode) {
-    fetch(`${apiBaseUrl}/events/${eventCode}/participants`)
-        .then(response => response.json())
-        .then(participants => {
-            // Populate the participants list
-            const participantsList = document.getElementById('participantsList');
-            participantsList.innerHTML = participants.map(participant =>
-                `<li>${participant.name} (${participant.email})</li>`
-            ).join('');
+// Function to get the eventId from the eventCode
+function getEventIdFromEventCode(eventCode) {
+    return fetch(`${apiBaseUrl}/events/code/${eventCode}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
         })
-        .catch(error => console.error('Error fetching participants:', error));
+        .then(data => {
+            // Assuming your backend returns an object with an eventId property
+            return data.eventId;
+        });
 }
 
-// Function to display the list of sponsors for the event
-function showSponsors(eventCode) {
-    fetch(`${apiBaseUrl}/events/${eventCode}/sponsors`)
-        .then(response => response.json())
-        .then(sponsors => {
-            // Populate the sponsors list
-            const sponsorsList = document.getElementById('sponsorsList');
-            sponsorsList.innerHTML = sponsors.map(sponsor =>
-                `<li>${sponsor.name} - $${sponsor.amount}</li>`
-            ).join('');
+
+
+
+// Updated function to register a participant
+// Function to register a participant
+function registerParticipant(participantData) {
+    if (currentEventId) {
+        fetch(`${apiBaseUrl}/participants`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ...participantData, EventId: currentEventId }) // Add the EventId to the request body
         })
-        .catch(error => console.error('Error fetching sponsors:', error));
+            .then(response => response.json())
+            .then(registeredParticipant => {
+                console.log('Participant registered:', registeredParticipant);
+                // Now refresh the participants list
+                showParticipants(getEventCodeFromURL());
+            })
+            .catch(e => {
+                console.error('Error during participant registration:', e.message);
+                alert('Error during registration: ' + e.message);
+            });
+    } else {
+        console.error('Event ID is not set. Cannot register participant.');
+    }
 }
+
+function showParticipants(eventCode) {
+    // First, get the event ID using the event code
+    getEventIdFromEventCode(eventCode)
+        .then(eventId => {
+            // Use the eventId to make the request for participants
+            return fetch(`${apiBaseUrl}/participants/events/${eventId}`);
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error fetching participants.');
+            }
+            return response.json();
+        })
+        .then(participants => {
+            const participantsListElement = document.getElementById('participantsList');
+            if (participantsListElement) {
+                participantsListElement.innerHTML = participants.map(p => `<li>${p.name} (${p.email})</li>`).join('');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching participants:', error);
+        });
+}
+
 
 
 // Call the displayEventDetails function when the event details page is loaded
@@ -134,23 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Function to handle the Organizer button click
-function showOrganizerView() {
-    const eventCode = getEventCodeFromURL();
-    window.location.href = `/edit-event.html?code=${eventCode}`;
-}
-
-// Function to handle the Participant button click
-function showParticipantForm() {
-    const eventCode = getEventCodeFromURL();
-    window.location.href = `/register-participant.html?code=${eventCode}`;
-}
-
-// Function to handle the Sponsor button click
-function showSponsorForm() {
-    const eventCode = getEventCodeFromURL();
-    window.location.href = `/sponsor-details.html?code=${eventCode}`;
-}
 
 // Function to setup role buttons with the correct links
 function setupRoleButtons(eventCode) {
@@ -158,28 +185,85 @@ function setupRoleButtons(eventCode) {
         window.location.href = `/edit-event.html?code=${eventCode}`;
     });
     document.getElementById('participantBtn').addEventListener('click', function () {
-        window.location.href = `/register-participant.html?code=${eventCode}`;
+        document.getElementById('registerParticipantModal').classList.remove('hidden');
     });
     document.getElementById('sponsorBtn').addEventListener('click', function () {
         window.location.href = `/sponsor-details.html?code=${eventCode}`;
     });
 }
 
-// Function to show the list of participants
-function showParticipants(eventCode) {
-    fetch(`${apiBaseUrl}/events/${eventCode}/participants`)
-        .then(response => response.json())
-        .then(participants => {
-            // Populate the participants list
-            const participantsList = document.getElementById('participantsList');
-            participantsList.innerHTML = participants.map(participant =>
-                `<li>${participant.name} (${participant.email})</li>`
-            ).join('');
-        })
-        .catch(error => console.error('Error fetching participants:', error));
+
+// Function to handle the Organizer button click
+function showOrganizerView() {
+    const eventCode = getEventCodeFromURL();
+    window.location.href = `/edit-event.html?code=${eventCode}`;
 }
 
+// Function to show the participant registration form
+function showParticipantForm() {
+    document.getElementById('registerParticipantModal').classList.remove('hidden');
+}
+
+// Function to hide the participant registration form
+function hideParticipantForm() {
+    document.getElementById('registerParticipantModal').classList.add('hidden');
+}
+
+// Event listener for the register participant form submission
+document.getElementById('registerParticipantForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the form from submitting the traditional way
+
+    const participantName = document.getElementById('participantName').value;
+    const participantEmail = document.getElementById('participantEmail').value;
+    const eventCode = getEventCodeFromURL();
+
+    // Here you can call getEventIdFromEventCode() function
+    // and then registerParticipant function as previously described
+    // After registration, you can call hideParticipantForm() and showParticipants(eventCode)
+
+    // Example:
+     getEventIdFromEventCode(eventCode).then(eventId => {
+         const participantData = {
+             name: participantName,
+             email: participantEmail,
+
+             eventId: eventId,
+             eventCode: eventCode
+         };
+         registerParticipant(participantData);
+         hideParticipantForm();
+         showParticipants(eventCode);
+     });
+    
+        // Ensure all fields are filled out
+        if (!participantName || !participantEmail) {
+            alert('All fields are required.');
+            return;
+        }
+    
+        const participantData = {
+            name: participantName,
+            email: participantEmail,
+            eventCode: eventCode
+        };
+    
+        // Call the function to register the participant
+        registerParticipant(participantData);
+        hideParticipantForm();
+        showParticipants(eventCode);
+});
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Getting the event code from URL and setting up the page
+    const eventCode = getEventCodeFromURL();
+    if (eventCode) {
+        displayEventDetails(eventCode);
+        showParticipants(eventCode);
+        showSponsors(eventCode);
+    }
     const createEventForm = document.getElementById('createEventForm');
     if (createEventForm) {
         createEventForm.addEventListener('submit', function (e) {
@@ -204,16 +288,29 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             createEvent(eventData);
 
+            const eventCode = getEventCodeFromURL();
+            if (eventCode) {
+                displayEventDetails(eventCode); // This will also set the currentEventId
+            }
+
+            if (eventCode) {
+                getEventIdFromEventCode(eventCode)
+                    .then(eventId => {
+                        // Save eventId in a higher scope if needed
+                        currentEventId = eventId;
+                        // Call your functions that require eventId
+                        displayEventDetails(eventId);
+                        showParticipants(eventId);
+                    })
+                    .catch(error => {
+                        console.error('Error retrieving event ID:', error);
+                        alert('Error: Could not retrieve event ID. Event with code ' + eventCode + ' not found.');
+                    });
+            }
+
         });
     }
-    // Getting the event code from URL and setting up the page
-    const eventCode = getEventCodeFromURL();
-    if (eventCode) {
-        displayEventDetails(eventCode);
-        setupRoleButtons(eventCode);
-        showParticipants(eventCode);
-        showSponsors(eventCode);
-    }
+
 
     // Setup role button event listeners if we are on the event details page
     const organizerBtn = document.getElementById('organizerBtn');
@@ -225,6 +322,25 @@ document.addEventListener('DOMContentLoaded', () => {
         participantBtn.addEventListener('click', () => showParticipantForm(eventCode));
         sponsorBtn.addEventListener('click', () => showSponsorForm(eventCode));
     }
+    const registerParticipantForm = document.getElementById('registerParticipantForm');
+    if (registerParticipantForm) {
+        registerParticipantForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Stop the regular form submission
+            const participantName = document.getElementById('participantName').value;
+            const participantEmail = document.getElementById('participantEmail').value;
+            const eventId = getEventCodeFromURL(); // You need to convert the code to ID
+
+            // Construct the participant data
+            const participantData = { name: participantName, email: participantEmail, eventId: eventId };
+
+            // Call the function to register the participant
+            registerParticipant(eventId, participantData);
+        });
+    }
 });
+
+
+
+
 
 
