@@ -24,6 +24,14 @@
             <h3>Participants:</h3>
             <ul id="participantsList"></ul>
         </section>
+
+        <!-- Sponsors List -->
+        <section id="sponsorsSection">
+            <h3>Sponsors:</h3>
+            <ul id="sponsorsList"></ul>
+        </section>
+
+        <!-- Role selection buttons -->
         <div class="role-buttons">
             <button id="organizerBtn">Organizer</button>
             <button id="participantBtn" onclick="showParticipantForm()">Participant</button>
@@ -41,6 +49,24 @@
 
                 <button type="submit">Register</button>
                 <button type="button" onclick="hideParticipantForm()">Cancel</button>
+            </form>
+        </div>
+
+
+        <!-- Hidden form for sponsoring events -->
+        <div id="registerSponsorModal" class="hidden">
+            <form id="sponsorEventForm">
+                <label for="sponsorName">Name:</label>
+                <input type="text" id="sponsorName" required>
+
+                <label for="sponsorAmount">Amount:</label>
+                <input type="number" id="sponsorAmount" required>
+
+                <label for="sponsorDetails">Details:</label>
+                <textarea id="sponsorDetails"></textarea>
+
+                <button type="submit">Submit</button>
+                <button type="button" onclick="hideSponsorForm()">Cancel</button>
             </form>
         </div>
 

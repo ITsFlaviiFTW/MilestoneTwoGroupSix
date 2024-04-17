@@ -83,7 +83,7 @@ namespace MilestoneTwoGroupSix.Controllers
 
             participant.Name = participantDto.Name;
             participant.Email = participantDto.Email;
-            // Update other fields as necessary
+            // TODO: Maybe update other fields as necessary?
 
             try
             {
@@ -123,6 +123,7 @@ namespace MilestoneTwoGroupSix.Controllers
 
 
         // GET: api/participants/events/{eventId}
+        // Get all participants for an event
         [HttpGet("events/{eventId}")]
         public async Task<ActionResult<IEnumerable<ParticipantDTO>>> GetParticipantsByEventId(int eventId)
         {

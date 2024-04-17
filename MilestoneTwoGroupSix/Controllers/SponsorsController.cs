@@ -85,7 +85,7 @@ namespace MilestoneTwoGroupSix.Controllers
             sponsor.Name = sponsorDto.Name;
             sponsor.Amount = sponsorDto.Amount;
             sponsor.Details = sponsorDto.Details;
-            // Assume EventId doesn't change; if it does, handle it appropriately
+            // Assume EventId doesn't change; if it does, we need to handle it appropriately
 
             try
             {
@@ -122,6 +122,31 @@ namespace MilestoneTwoGroupSix.Controllers
 
             return NoContent();
         }
+
+        // GET: api/sponsors/events/{eventId}
+        // Get sponsors for a specific event
+        [HttpGet("events/{eventId}")]
+        public async Task<ActionResult<IEnumerable<SponsorDTO>>> GetSponsorsByEventId(int eventId)
+        {
+            var sponsors = await _context.Sponsors
+                .Where(s => s.EventId == eventId)
+                .Select(s => new SponsorDTO
+                {
+                    Name = s.Name,
+                    Amount = s.Amount,
+                    Details = s.Details,
+                    EventId = s.EventId
+                })
+                .ToListAsync();
+
+            if (!sponsors.Any())
+            {
+                return NotFound("No sponsors found for this event.");
+            }
+
+            return Ok(sponsors);
+        }
+
 
     }
 

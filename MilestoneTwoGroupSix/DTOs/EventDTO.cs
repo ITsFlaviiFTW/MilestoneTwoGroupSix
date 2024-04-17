@@ -2,10 +2,11 @@
 {
     public class EventDTO
     {
+        // Data Transfer Object for Event
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime DateTime { get; set; }
-        public string Location { get; set; }
-        // Code property is removed from here since it's server-generated.
+        public string Location { get; set; } // Location of the event
+
     }
 }

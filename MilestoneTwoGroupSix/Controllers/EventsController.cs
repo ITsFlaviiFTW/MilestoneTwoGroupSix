@@ -175,7 +175,7 @@ namespace MilestoneTwoGroupSix.Controllers
                 }
             }
 
-            
+            // Return the updated event as a DTO
             return Ok(new EventDTO
             {
                 Name = @event.Name,

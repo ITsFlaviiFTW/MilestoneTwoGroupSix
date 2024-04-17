@@ -12,6 +12,9 @@ namespace MilestoneTwoGroupSix.Data
         public DbSet<Participant> Participants { get; set; }
         public DbSet<Sponsor> Sponsors { get; set; }
 
+        // Fluent API configuration
+        // This is where we can configure the database schema
+        // For example, we can specify the precision and scale of the Amount property in the Sponsor entity
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Sponsor>()

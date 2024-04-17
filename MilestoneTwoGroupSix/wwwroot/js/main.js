@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'create-event.html';
         });
     }
-
+    // Event listener for the find event form
     const findEventForm = document.getElementById('findEventForm');
     if (findEventForm) {
         findEventForm.addEventListener('submit', function (e) {
@@ -54,8 +54,9 @@ function fetchEvents() {
             return response.json();
         })
         .then(events => {
-            // Here you can process and display events on your main page if necessary
-            // Assuming you have a div with id 'eventsList' to display event summaries
+            // Here we can process and display events on the main page if necessary
+            // Assuming we have a div with id 'eventsList' to display event summaries, probably needs to be implemented later
+            // For now, we will just log the events to the console
             const eventsListDiv = document.getElementById('eventsList');
             if (eventsListDiv) {
                 eventsListDiv.innerHTML = events.map(event =>

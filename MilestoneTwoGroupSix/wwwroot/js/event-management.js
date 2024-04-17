@@ -10,6 +10,23 @@ function getEventCodeFromURL() {
     return urlParams.get('code');
 }
 
+// Function to get the eventId from the eventCode
+function getEventIdFromEventCode(eventCode) {
+    return fetch(`${apiBaseUrl}/events/code/${eventCode}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            currentEventId = data.eventId;
+            return data.eventId; // This line is important - we are resolving the promise with the event ID.
+        });
+}
+
+
+
 // Function to create an event
 function createEvent(eventData) {
     fetch(`${apiBaseUrl}/events`, {
@@ -29,7 +46,7 @@ function createEvent(eventData) {
         })
         .then(createdEvent => {
             console.log('Event created:', createdEvent);
-            window.location.href = `/event.html?code=${createdEvent.code}`; // Make sure this is the correct property name as returned by your server
+            window.location.href = `/event.html?code=${createdEvent.code}`; //must match the server responde and code
         })
         .catch(error => {
             console.error('Error creating event:', error);
@@ -102,42 +119,68 @@ function displayEventDetails(eventCode) {
     });
 }
 
+// Function to update event details
+function updateEventDetails(eventCode) {
+    const name = document.getElementById('editEventName').value;
+    const description = document.getElementById('editEventDescription').value;
+    const dateTime = document.getElementById('editEventDateTime').value;
+    const location = document.getElementById('editEventLocation').value;
 
-// Function to get the eventId from the eventCode
-function getEventIdFromEventCode(eventCode) {
-    return fetch(`${apiBaseUrl}/events/code/${eventCode}`)
+    const eventData = {
+        Name: name,
+        Description: description,
+        DateTime: dateTime,
+        Location: location
+    };
+
+    // Update the event details using the API
+    fetch(`${apiBaseUrl}/events/${eventCode}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData)
+    })
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error('Problem updating event details');
             }
             return response.json();
         })
-        .then(data => {
-            // Assuming your backend returns an object with an eventId property
-            return data.eventId;
+        .then(updatedEvent => {
+            console.log('Event updated successfully:', updatedEvent);
+            // Here you can redirect or show a success message
+        })
+        .catch(error => {
+            console.error('Error updating event:', error);
+            alert('Error updating event: ' + error.message);
         });
 }
 
-
+/*document.getElementById('saveEventBtn').addEventListener('click', function () {
+    const eventCode = getEventCodeFromURL();
+    updateEventDetails(eventCode);
+});
+*/
 
 
 
 // Updated function to register a participant
 // Function to register a participant
-function registerParticipant(participantData) {
+function registerParticipant(eventId, participantData) {
     if (currentEventId) {
         fetch(`${apiBaseUrl}/participants`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ ...participantData, EventId: currentEventId }) // Add the EventId to the request body
+            body: JSON.stringify({ ...participantData, EventId: eventId }) // Add the EventId to the request body
         })
             .then(response => response.json())
             .then(registeredParticipant => {
                 console.log('Participant registered:', registeredParticipant);
                 // Now refresh the participants list
-                showParticipants(getEventCodeFromURL());
+                showParticipants(eventCode);
             })
             .catch(e => {
                 console.error('Error during participant registration:', e.message);
@@ -148,29 +191,58 @@ function registerParticipant(participantData) {
     }
 }
 
+
+//function to display the list of participants for an event
 function showParticipants(eventCode) {
-    // First, get the event ID using the event code
-    getEventIdFromEventCode(eventCode)
-        .then(eventId => {
-            // Use the eventId to make the request for participants
-            return fetch(`${apiBaseUrl}/participants/events/${eventId}`);
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error fetching participants.');
-            }
-            return response.json();
-        })
+    fetch(`${apiBaseUrl}/participants/events/${eventCode}`)
+        .then(response => response.json())
         .then(participants => {
             const participantsListElement = document.getElementById('participantsList');
             if (participantsListElement) {
-                participantsListElement.innerHTML = participants.map(p => `<li>${p.name} (${p.email})</li>`).join('');
+                participantsListElement.innerHTML = participants.map(p => `<li>${p.name} - ${p.email}</li>`).join('');
             }
         })
         .catch(error => {
             console.error('Error fetching participants:', error);
         });
 }
+
+
+// Function to register a new sponsor
+function registerSponsor(eventCode, sponsorData) {
+    fetch(`${apiBaseUrl}/sponsors`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ...sponsorData, EventCode: eventCode })
+    })
+        .then(response => response.json())
+        .then(registeredSponsor => {
+            console.log('Sponsor registered:', registeredSponsor);
+            // Refresh the sponsors list
+            showSponsors(eventCode);
+        })
+        .catch(error => {
+            console.error('Error registering sponsor:', error);
+        });
+}
+
+// Function to display the list of sponsors for an event
+function showSponsors(eventCode) {
+    fetch(`${apiBaseUrl}/sponsors/events/${eventCode}`)
+        .then(response => response.json())
+        .then(sponsors => {
+            const sponsorsListElement = document.getElementById('sponsorsList');
+            if (sponsorsListElement) {
+                sponsorsListElement.innerHTML = sponsors.map(s => `<li>${s.name} - $${s.amount}</li>`).join('');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching sponsors:', error);
+        });
+}
+
 
 
 
@@ -183,7 +255,9 @@ function setupRoleButtons(eventCode) {
         document.getElementById('registerParticipantModal').classList.remove('hidden');
     });
     document.getElementById('sponsorBtn').addEventListener('click', function () {
-        window.location.href = `/sponsor-details.html?code=${eventCode}`;
+        document.getElementById('registerSponsorModal').classList.remove('hidden');
+
+        
     });
 }
 
@@ -194,19 +268,11 @@ function showOrganizerView() {
     window.location.href = `/edit-event.html?code=${eventCode}`;
 }
 
-// Function to show the participant registration form
-function showParticipantForm() {
-    document.getElementById('registerParticipantModal').classList.remove('hidden');
-}
 
-// Function to hide the participant registration form
-function hideParticipantForm() {
-    document.getElementById('registerParticipantModal').classList.add('hidden');
-}
 
 
 // Event listener for the register participant form submission
-document.getElementById('registerParticipantForm').addEventListener('submit', function (e) {
+/*document.getElementById('registerParticipantForm').addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent the form from submitting the traditional way
 
     const participantName = document.getElementById('participantName').value;
@@ -230,7 +296,57 @@ document.getElementById('registerParticipantForm').addEventListener('submit', fu
             console.error('Error registering participant:', error);
             alert('Error: ' + error.message);
         });
-});
+});*/
+
+// Function to show the participant registration form
+function showParticipantForm() {
+    document.getElementById('registerParticipantModal').classList.remove('hidden');
+}
+
+// Function to hide the participant registration form
+function hideParticipantForm() {
+    document.getElementById('registerParticipantModal').classList.add('hidden');
+}
+
+
+
+// Assuming you have a form with id 'sponsorDetailsForm'
+/*document.getElementById('sponsorDetailsForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the form from submitting the traditional way
+
+    const sponsorName = document.getElementById('sponsorName').value;
+    const sponsorAmount = document.getElementById('sponsorAmount').value; // Ensure this input exists
+    const sponsorDetails = document.getElementById('sponsorDetails').value; // Ensure this input exists
+    const eventCode = getEventCodeFromURL();
+
+    // Call displayEventDetails to ensure currentEventId is set
+    displayEventDetails(eventCode)
+        .then(eventId => {
+            // Now currentEventId is guaranteed to be set
+            const sponsorData = {
+                name: sponsorName,
+                amount: sponsorAmount,
+                details: sponsorDetails,
+                EventId: currentEventId
+            };
+
+            // Register the sponsor
+            registerSponsor(sponsorData);
+        })
+        .catch(error => {
+            console.error('Error registering sponsor:', error);
+            alert('Error: ' + error.message);
+        });
+});*/
+
+// Similarly, we have a function to toggle the sponsor form visibility
+function showSponsorForm() {
+    document.getElementById('registerSponsorModal').classList.remove('hidden');
+}
+
+function hideSponsorForm() {
+    document.getElementById('registerSponsorModal').classList.add('hidden');
+}
 
 
 
@@ -238,11 +354,26 @@ document.getElementById('registerParticipantForm').addEventListener('submit', fu
 document.addEventListener('DOMContentLoaded', () => {
     // Getting the event code from URL and setting up the page
     const eventCode = getEventCodeFromURL();
+
     if (eventCode) {
-        displayEventDetails(eventCode);
-        showParticipants(eventCode);
-        showSponsors(eventCode);
+        getEventIdFromEventCode(eventCode)
+            .then(eventId => {
+                currentEventId = eventId; // Set the currentEventId based on the fetched ID
+                displayEventDetails(eventCode)
+                    .then(() => {
+                        showParticipants(eventId);
+                        showSponsors(eventId);
+                    })
+                    .catch(error => {
+                        console.error('Error displaying event details:', error);
+                    });
+            })
+            .catch(error => {
+                console.error('Error retrieving event ID:', error);
+                alert('Error: Could not retrieve event ID. Event with code ' + eventCode + ' not found.');
+            });
     }
+
     const createEventForm = document.getElementById('createEventForm');
     if (createEventForm) {
         createEventForm.addEventListener('submit', function (e) {
@@ -275,9 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (eventCode) {
                 getEventIdFromEventCode(eventCode)
                     .then(eventId => {
-                        // Save eventId in a higher scope if needed
+                        // Saves eventId in a higher scope if needed
                         currentEventId = eventId;
-                        // Call your functions that require eventId
+                        // Calls the functions that require eventId
                         displayEventDetails(eventId);
                         showParticipants(eventId);
                     })
@@ -301,13 +432,17 @@ document.addEventListener('DOMContentLoaded', () => {
         participantBtn.addEventListener('click', () => showParticipantForm(eventCode));
         sponsorBtn.addEventListener('click', () => showSponsorForm(eventCode));
     }
+
+
+    // Register participant form submission
+    // assumes the form has an id of 'registerParticipantForm'
     const registerParticipantForm = document.getElementById('registerParticipantForm');
     if (registerParticipantForm) {
         registerParticipantForm.addEventListener('submit', function (e) {
             e.preventDefault(); // Stop the regular form submission
             const participantName = document.getElementById('participantName').value;
             const participantEmail = document.getElementById('participantEmail').value;
-            const eventId = getEventCodeFromURL(); // You need to convert the code to ID
+            const eventId = getEventCodeFromURL();
 
             // Construct the participant data
             const participantData = { name: participantName, email: participantEmail, eventId: eventId };
@@ -316,10 +451,67 @@ document.addEventListener('DOMContentLoaded', () => {
             registerParticipant(eventId, participantData);
         });
     }
+
+    // Register sponsor form submission
+    const sponsorDetailsForm = document.getElementById('sponsorEventForm');
+    if (sponsorDetailsForm) {
+        sponsorDetailsForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Stop the form from submitting the traditional way
+
+            const sponsorName = document.getElementById('sponsorName').value;
+            const sponsorAmount = parseFloat(document.getElementById('sponsorAmount').value);
+            const sponsorDetails = document.getElementById('sponsorDetails').value;
+            const eventId = getEventCodeFromURL();
+
+            const sponsorData = {
+                name: sponsorName,
+                amount: sponsorAmount,
+                details: sponsorDetails,
+                EventId: eventId
+            };
+
+            // Register the sponsor
+            registerSponsor(eventId, sponsorData);
+        });
+    }
+
 });
 
 
+    //sponsor stuff for DOM Loaded
 
+    //for whatever reason, whenever i uncomment this, the javascript gives me the alert that the event code is not found, but then the page is populated.
+
+/*    const sponsorEventForm = document.getElementById('sponsorEventForm');
+
+    // If the eventCode exists, retrieve and set the eventId
+    if (eventCode) {
+        getEventIdFromEventCode(eventCode).then(eventId => {
+            document.getElementById('eventId').value = eventId;
+        }).catch(error => {
+            console.error('Error retrieving event ID:', error);
+            alert('Error: Could not retrieve event ID. Event with code ' + eventCode + ' not found.');
+        });
+    }
+
+    sponsorDetailsForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Stop the form from submitting the traditional way
+
+        const sponsorName = document.getElementById('sponsorName').value;
+        const sponsorAmount = parseFloat(document.getElementById('sponsorAmount').value);
+        const sponsorDetails = document.getElementById('sponsorDetails').value;
+        const eventId = document.getElementById('eventId').value;
+
+        const sponsorData = {
+            name: sponsorName,
+            amount: sponsorAmount,
+            details: sponsorDetails,
+            EventId: eventId
+        };
+
+        // Register the sponsor
+        registerSponsor(sponsorData);
+    });*/
 
 
 
